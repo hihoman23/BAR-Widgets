@@ -34,7 +34,7 @@ function widget:GameFrame(n)
             return
         end
         local ux, uy, uz = spGetUnitPosition(attackedUnit)
-        camState.px = ux
+        camState.px = 0
         camState.pz = uz
     end
 end
