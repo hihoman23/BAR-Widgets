@@ -19,14 +19,30 @@ local toIgnore = {
     ["corfav"] = true,  --Rascal
 }
 
+local myTeam = Spring.GetMyTeamID()
+
+local camState = Spring.GetCameraState()
+
 local attackedUnit
 local whenAttacked
 local reactTime = 5 --how long you have to press the button to send camera to attacked unit
 
 function widget:GameFrame(n)
-
+    if attackedUnit then
+        if whenAttacked + reactTime <= os.time(os.date("!*t")) then
+            attackedUnit = nil
+            return
+        end
+        local ux, uy, uz = spGetUnitPosition(attackedUnit)
+        camState.px = ux
+        camState.pz = uz
+    end
 end
 
-function widget:UnitDamaged(unitID)
-
+function widget:UnitDamaged(unitID, unitDefID, unitTeam)
+    local def = UnitDefs[unitDefID]
+    if toIgnore[def.name] == nil then
+        attackedUnit = unitID
+        whenAttacked = os.time(os.date("!*t"))
+    end
 end
