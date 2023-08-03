@@ -10,6 +10,10 @@ function widget:GetInfo()
     }
 end
 
+local attackedUnit
+local whenAttacked
+local reactTime = 5 --how long you have to press the button to send camera to attacked unit
+
 function widget:GameFrame(n)
 
 end
