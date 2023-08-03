@@ -10,3 +10,10 @@ function widget:GetInfo()
     }
 end
 
+function widget:GameFrame(n)
+
+end
+
+function widget:UnitDamaged(unitID)
+
+end
