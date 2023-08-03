@@ -40,6 +40,8 @@ function widget:GameFrame(n)
 end
 
 function widget:UnitDamaged(unitID, unitDefID, unitTeam)
+    camState.name = "ta"
+    camState.mode = 1
     camState.px = 0
     local def = UnitDefs[unitDefID]
     if toIgnore[def.name] == nil then
