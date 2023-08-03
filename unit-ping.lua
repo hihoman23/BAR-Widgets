@@ -21,13 +21,13 @@ local toIgnore = {
 
 local myTeam = Spring.GetMyTeamID()
 
-local camState = Spring.GetCameraState()
 
 local attackedUnit
 local whenAttacked
 local reactTime = 5 --how long you have to press the button to send camera to attacked unit
 
 function widget:GameFrame(n)
+    local camState = Spring.GetCameraState()
     camState.name = "ta"
     camState.mode = 1
     camState.px = 0
