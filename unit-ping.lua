@@ -28,6 +28,9 @@ local whenAttacked
 local reactTime = 5 --how long you have to press the button to send camera to attacked unit
 
 function widget:GameFrame(n)
+    camState.name = "ta"
+    camState.mode = 1
+    camState.px = 0
     if attackedUnit then
         if whenAttacked + reactTime <= os.time(os.date("!*t")) then
             attackedUnit = nil
