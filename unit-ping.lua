@@ -28,8 +28,8 @@ local reactTime = 5 --how long you have to press the button to send camera to at
 
 function widget:GameFrame(n)
     local camState = Spring.GetCameraState()
-    camState.name = "ta"
-    camState.mode = 1
+    camState.name = "spring"
+    camState.mode = 2
     camState.px = 0
     if attackedUnit then
         if whenAttacked + reactTime <= os.time(os.date("!*t")) then
@@ -43,8 +43,8 @@ function widget:GameFrame(n)
 end
 
 function widget:UnitDamaged(unitID, unitDefID, unitTeam)
-    camState.name = "ta"
-    camState.mode = 1
+    camState.name = "spring"
+    camState.mode = 2
     camState.px = 0
     local def = UnitDefs[unitDefID]
     if toIgnore[def.name] == nil then
