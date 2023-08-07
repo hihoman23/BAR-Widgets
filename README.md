@@ -1,3 +1,4 @@
 # Widgets
 <h2>by hihoman23</h2>
-This is a collection of my released widgets.
+<br>
+This is a collection of my released BAR(Beyond All Reason) widgets.
