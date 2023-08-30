@@ -25,6 +25,9 @@ local explosionRanges = {
     ["corsilo_crblmssl"] = 960
 }
 local isMine
+local lastPingFrame = -30
+local pingCount = 0
+
 local myTeam = Spring.GetMyTeamID()
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetUnitDefID = Spring.GetUnitDefID
@@ -36,7 +39,6 @@ function DrawFlatCircle(x, y, z, r, own, lines)
     local r2
     for i = 1, lines do
         r1 = ((i-0.5)/lines) * 2 * math.pi
-        Spring.Echo(r1)
         r2 = ((i+0.5)/lines) * 2 * math.pi
         Spring.MarkerAddLine(x+r*cos(r1),y,z+r*sin(r1),x+r*cos(r2),y,z+r*sin(r2),own)
     end
@@ -56,29 +58,38 @@ function GetProjectTileTarget(projectileID)
 end
 
 function NukeLaunch(unitID, own)
-    own = not own
     local ux, uy, uz = spGetUnitPosition(unitID)
+    own = not own
     local projectiles = Spring.GetProjectilesInRectangle(ux-50,uz-50,ux+50,uz+50)
     local nukeID
     local projectileName
     for _,projectileID in pairs(projectiles) do
         projectileName = Spring.GetProjectileName(projectileID)
-        Spring.Echo(projectileName)
         if nukeMissileDefs[projectileName] then
             nukeID = projectileID
         end
     end
     projectileName = Spring.GetProjectileName(nukeID)
+    
 
     local px, py, pz = GetProjectTileTarget(nukeID)
 
     Spring.MarkerAddPoint(px, py, pz, "Nuke Coming In Here", own)
-    DrawFlatCircle(px, py, pz, explosionRanges[projectileName], own)
+    DrawFlatCircle(px, py, pz, explosionRanges[projectileName], own, 6)
 end
 
-function widget:GameFrame()
+
+function widget:GameFrame(n)
+    local stockpile
     for nukeID, prevStockpile in pairs(nukes) do
-        local stockpile = Spring.GetUnitStockpile(nukeID)
+        if pingCount >= 3 then
+            pingCount = 0
+            lastPingFrame = n
+        end
+        if (n - lastPingFrame)<5 then
+            do return end
+        end
+        stockpile = Spring.GetUnitStockpile(nukeID)
         isMine = false
         if myNukes[nukeID] then
             isMine = true
@@ -86,12 +97,30 @@ function widget:GameFrame()
         if prevStockpile > stockpile then
             nukes[nukeID] = stockpile
             NukeLaunch(nukeID, isMine)
+            pingCount = pingCount + 1
         end
         if prevStockpile < stockpile then
             nukes[nukeID] = stockpile
         end
     end
 end
+
+--[[function widget:StockpileChanged(nukeID, unitDefID, unitTeam, weaponNum, prevStockpile, stockpile)
+    if not nukes[nukeID] then
+        do return end
+    end
+    isMine = false
+    if myNukes[nukeID] then
+        isMine = true
+    end
+    if prevStockpile > stockpile then 
+        nukes[nukeID] = stockpile
+        NukeLaunch(nukeID, isMine)
+    end
+    --[[if prevStockpile < stockpile then
+        nukes[nukeID] = stockpile
+    end]]
+--end
 
 function AddUnit(unitID, unitDefID, unitTeam)
     local def = UnitDefs[unitDefID]
