@@ -105,23 +105,6 @@ function widget:GameFrame(n)
     end
 end
 
---[[function widget:StockpileChanged(nukeID, unitDefID, unitTeam, weaponNum, prevStockpile, stockpile)
-    if not nukes[nukeID] then
-        do return end
-    end
-    isMine = false
-    if myNukes[nukeID] then
-        isMine = true
-    end
-    if prevStockpile > stockpile then 
-        nukes[nukeID] = stockpile
-        NukeLaunch(nukeID, isMine)
-    end
-    --[[if prevStockpile < stockpile then
-        nukes[nukeID] = stockpile
-    end]]
---end
-
 function AddUnit(unitID, unitDefID, unitTeam)
     local def = UnitDefs[unitDefID]
     if nukeDefs[def.name] then
