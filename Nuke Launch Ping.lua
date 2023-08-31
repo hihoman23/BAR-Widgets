@@ -75,14 +75,14 @@ function NukeLaunch(unitID, own)
     local px, py, pz = GetProjectTileTarget(nukeID)
 
     Spring.MarkerAddPoint(px, py, pz, "Nuke Coming In Here", own)
-    DrawFlatCircle(px, py, pz, explosionRanges[projectileName], own, 6)
+    DrawFlatCircle(px, py, pz, explosionRanges[projectileName], own, 16)
 end
 
 
 function widget:GameFrame(n)
     local stockpile
     for nukeID, prevStockpile in pairs(nukes) do
-        if pingCount >= 3 then
+        if pingCount >= 1 then
             pingCount = 0
             lastPingFrame = n
         end
@@ -104,6 +104,23 @@ function widget:GameFrame(n)
         end
     end
 end
+
+--[[function widget:StockpileChanged(nukeID, unitDefID, unitTeam, weaponNum, prevStockpile, stockpile)
+    if not nukes[nukeID] then
+        do return end
+    end
+    isMine = false
+    if myNukes[nukeID] then
+        isMine = true
+    end
+    if prevStockpile > stockpile then 
+        nukes[nukeID] = stockpile
+        NukeLaunch(nukeID, isMine)
+    end
+    --[[if prevStockpile < stockpile then
+        nukes[nukeID] = stockpile
+    end]]
+--end
 
 function AddUnit(unitID, unitDefID, unitTeam)
     local def = UnitDefs[unitDefID]
