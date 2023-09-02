@@ -75,7 +75,7 @@ function NukeLaunch(unitID, own)
     local px, py, pz = GetProjectTileTarget(nukeID)
 
     Spring.MarkerAddPoint(px, py, pz, "Nuke Coming In Here", own)
-    DrawFlatCircle(px, py, pz, explosionRanges[projectileName], own, 16)
+    DrawFlatCircle(px, py, pz, explosionRanges[projectileName], own, 24)
 end
 
 
