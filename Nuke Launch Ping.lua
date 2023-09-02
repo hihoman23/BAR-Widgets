@@ -10,19 +10,32 @@ function widget:GetInfo()
     }
 end
 
+--Only Ping Nukes(not Juno)
+local onlyNukes = false
+local pingColor = "\255"..string.char(255)..string.char(1)..string.char(1)
 local nukes = {}
 local myNukes = {}
+local missileLauncherDefs = {
+    ["armsilo"] = true,
+    ["corsilo"] = true,
+    ["armjuno"] = true,
+    ["corjuno"] = true
+}
 local nukeDefs = {
     ["armsilo"] = true,
     ["corsilo"] = true
 }
-local nukeMissileDefs = {
-    ["armsilo_nuclear_missile"] = true,
-    ["corsilo_crblmssl"] = true
-}
 local explosionRanges = {
     ["armsilo_nuclear_missile"] = 640,
-    ["corsilo_crblmssl"] = 960
+    ["corsilo_crblmssl"] = 960,
+    ["armjuno_juno_pulse"] = 650,
+    ["corjuno_juno_pulse"] = 650
+}
+local text = {
+    ["armsilo_nuclear_missile"] = "Nuke Coming In Here",
+    ["corsilo_crblmssl"] = "Nuke Coming In Here",
+    ["armjuno_juno_pulse"] = "Juno Coming In Here",
+    ["corjuno_juno_pulse"] = "Juno Coming In Here"
 }
 local isMine
 local lastPingFrame = -30
@@ -60,12 +73,12 @@ end
 function NukeLaunch(unitID, own)
     local ux, uy, uz = spGetUnitPosition(unitID)
     own = not own
-    local projectiles = Spring.GetProjectilesInRectangle(ux-50,uz-50,ux+50,uz+50)
+    local projectiles = Spring.GetProjectilesInRectangle(ux-1,uz-1,ux+1,uz+1)
     local nukeID
     local projectileName
     for _,projectileID in pairs(projectiles) do
         projectileName = Spring.GetProjectileName(projectileID)
-        if nukeMissileDefs[projectileName] then
+        if explosionRanges[projectileName] then
             nukeID = projectileID
         end
     end
@@ -74,7 +87,7 @@ function NukeLaunch(unitID, own)
 
     local px, py, pz = GetProjectTileTarget(nukeID)
 
-    Spring.MarkerAddPoint(px, py, pz, "Nuke Coming In Here", own)
+    Spring.MarkerAddPoint(px, py, pz, text[projectileName], own)
     DrawFlatCircle(px, py, pz, explosionRanges[projectileName], own, 24)
 end
 
@@ -124,7 +137,7 @@ end
 
 function AddUnit(unitID, unitDefID, unitTeam)
     local def = UnitDefs[unitDefID]
-    if nukeDefs[def.name] then
+    if (missileLauncherDefs[def.name] and (not onlyNukes))or nukeDefs[def.name] then
         local stockpile =  Spring.GetUnitStockpile(unitID)
         nukes[unitID] = stockpile
         if unitTeam == myTeam then
