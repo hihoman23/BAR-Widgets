@@ -28,8 +28,8 @@ local nukeDefs = {
 local explosionRanges = {
     ["armsilo_nuclear_missile"] = 640,
     ["corsilo_crblmssl"] = 960,
-    ["armjuno_juno_pulse"] = 650,
-    ["corjuno_juno_pulse"] = 650
+    ["armjuno_juno_pulse"] = 700,
+    ["corjuno_juno_pulse"] = 700
 }
 local text = {
     ["armsilo_nuclear_missile"] = "Nuke Coming In Here",
