@@ -10,6 +10,12 @@ function widget:GetInfo()
     }
 end
 
+local makePingRed = false
+if makePingRed then
+    local pingColor = "\255"..string.char(255)..string.char(1)..string.char(1)
+else
+    local pingColor = ""
+end
 local nukePings = 0
 local maxPings = 5
 local nukes = {}
@@ -50,7 +56,7 @@ function widget:StockpileChanged(nukeID, unitDefID, unitTeam, weaponNum, prevSto
             nukes[nukeID] = stockpile
             nukePings =  nukePings + 1
             local ux, uy, uz = spGetUnitPosition(nukeID)
-            Spring.MarkerAddPoint(ux, uy, uz, "nuke is ready", true)
+            Spring.MarkerAddPoint(ux, uy, uz, pingColor .. "nuke is ready", true)
         end
     end
 end
