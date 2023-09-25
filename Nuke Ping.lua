@@ -10,11 +10,12 @@ function widget:GetInfo()
     }
 end
 
-local makePingRed = false
+local makePingRed = true
+local pingColor
 if makePingRed then
-    local pingColor = "\255"..string.char(255)..string.char(1)..string.char(1)
+    pingColor = "\255"..string.char(255)..string.char(1)..string.char(1)
 else
-    local pingColor = ""
+    pingColor = ""
 end
 local nukePings = 0
 local maxPings = 5
@@ -90,7 +91,6 @@ function widget:Initialize()
         widgetHandler:RemoveWidget(self)
         do return end
     end
-
     for _, unitID in pairs(Spring.GetTeamUnits(myTeam)) do
         AddUnit(unitID, spGetUnitDefID(unitID), myTeam)
     end
