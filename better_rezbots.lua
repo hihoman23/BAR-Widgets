@@ -1,6 +1,6 @@
 function widget:GetInfo()
     return {
-        name    = "Better Rezbots",
+        name    = "Better(greedy) Rezbots",
         desc    = "Adds toggle(alt + w) to rezbots that allows them to rezzurect units and then immediately reclaim them.",
         author  = "hihoman23",
         date    = "2023",
