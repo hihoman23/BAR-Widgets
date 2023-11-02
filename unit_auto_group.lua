@@ -1,16 +1,14 @@
-local versionNum = "5.00"
+local versionNum = '5.00'
 
 function widget:GetInfo()
 	return {
 		name = "Auto Group Presets",
-		desc = "v"
-			.. versionNum
-			.. " Alt+0-9 sets autogroup# for selected unit type(s). Newly built units get added to group# equal to their autogroup#. Alt BACKQUOTE (~) remove units. Type '/luaui autogroup help' for help or view settings at: Settings/Interface/AutoGroup'.",
+		desc = "v" .. (versionNum) .. " Alt+0-9 sets autogroup# for selected unit type(s). Newly built units get added to group# equal to their autogroup#. Alt BACKQUOTE (~) remove units. Type '/luaui autogroup help' for help or view settings at: Settings/Interface/AutoGroup'.",
 		author = "Licho",
 		date = "Mar 23, 2007",
 		license = "GNU GPL, v2 or later",
-		layer = 999999,
-		enabled = false, --loaded by default?
+		layer = 0,
+		enabled = false  --loaded by default?
 	}
 end
 
@@ -51,8 +49,9 @@ local presets = {}
 for i = 1, 9 do
 	presets[i] = {}
 end
+local unit2group = {} -- list of unit types to group
 
-local groupableBuildingTypes = { "tacnuke", "empmissile", "napalmmissile", "seismic" }
+local groupableBuildingTypes = { 'tacnuke', 'empmissile', 'napalmmissile', 'seismic' }
 local groupableBuildings = {}
 for _, v in ipairs(groupableBuildingTypes) do
 	if UnitDefNames[v] then
@@ -70,7 +69,7 @@ for udefID, def in ipairs(UnitDefs) do
 			mobileBuilders[udefID] = true
 		end
 
-		if groupableBuildings[udefID] or not def.isBuilding then
+		if (groupableBuildings[udefID] or not def.isBuilding) then
 			unitShowGroup[udefID] = true
 		end
 	end
@@ -93,114 +92,6 @@ local GetUnitPosition = Spring.GetUnitPosition
 local GetGameFrame = Spring.GetGameFrame
 local Echo = Spring.Echo
 
-function widget:GameStart()
-	gameStarted = true
-	widget:PlayerChanged()
-end
-
-... (301 lines left)
-Collapse
-unit_auto_group_preset.lua
-11 KB
-hihoman23
-OP
- — Today at 7:32 AM
-Rename the file to unit_auto_group.lua so that it overwrites the existing auto groups widget
-﻿
-local versionNum = "5.00"
-
-function widget:GetInfo()
-	return {
-		name = "Auto Group Presets",
-		desc = "v"
-			.. versionNum
-			.. " Alt+0-9 sets autogroup# for selected unit type(s). Newly built units get added to group# equal to their autogroup#. Alt BACKQUOTE (~) remove units. Type '/luaui autogroup help' for help or view settings at: Settings/Interface/AutoGroup'.",
-		author = "Licho",
-		date = "Mar 23, 2007",
-		license = "GNU GPL, v2 or later",
-		layer = 999999,
-		enabled = false, --loaded by default?
-	}
-end
-
-include("keysym.h.lua")
-
----- CHANGELOG -----
--- hihoman23,       v5.00   (01nov2023) :   Adds multiple presets, which are controlled with ctrl+alt+ 0-9,
---											for different roles.
--- badosu born2crawl,		v4.01	(08oct2021)	: 	Use actions instead of hardcoded keybindings
--- versus666,		v3.03	(17dec2011)	: 	Back to alt BACKQUOTE to remove selected units from group
---											to please licho, changed help accordingly.
--- versus666,		v3.02	(16dec2011)	: 	Fixed for 84, removed unused features, now alt backspace to remove
---											selected units from group, changed help accordingly.
--- versus666,		v3.01	(07jan2011)	: 	Added check to comply with F5.
--- wagonrepairer	v3.00	(07dec2010)	:	'Chilified' autogroup.
--- versus666, 		v2.25	(04nov2010)	:	Added switch to show or not group number, by licho's request.
--- versus666, 		v2.24	(27oct2010)	:	Added switch to auto add units when built from factories.
---											Add group label numbers to units in group.
---											Sped up some routines & cleaned code.
---		?,			v2,23				:	Unknown.
--- very_bad_solider,v2.22				:	Ignores buildings and factories.
---											Does not react when META (+ALT) is pressed.
--- CarRepairer,		v2.00				:	Autogroups key is alt instead of alt+ctrl.
---											Added commands: help, loadgroups, cleargroups, verboseMode, addall.
--- Licho,			v1.0				:	Creation.
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-local currPreset = 1
-
-local addall = true
-local immediate = true
-local persist = true
-local verbose = true
-
-local presets = {}
-for i = 1, 9 do
-	presets[i] = {}
-end
-
-local groupableBuildingTypes = { "tacnuke", "empmissile", "napalmmissile", "seismic" }
-local groupableBuildings = {}
-for _, v in ipairs(groupableBuildingTypes) do
-	if UnitDefNames[v] then
-		groupableBuildings[UnitDefNames[v].id] = true
-	end
-end
-
-local mobileBuilders = {}
-local builtInPlace = {}
-
-local unitShowGroup = {}
-for udefID, def in ipairs(UnitDefs) do
-	if not def.isFactory then
-		if def.buildOptions and #def.buildOptions > 0 then
-			mobileBuilders[udefID] = true
-		end
-
-		if groupableBuildings[udefID] or not def.isBuilding then
-			unitShowGroup[udefID] = true
-		end
-	end
-end
-
-local finiGroup = {}
-local myTeam = Spring.GetMyTeamID()
-local createdFrame = {}
-
-local gameStarted
-
-local SetUnitGroup = Spring.SetUnitGroup
-local GetSelectedUnits = Spring.GetSelectedUnits
-local GetUnitDefID = Spring.GetUnitDefID
-local GetUnitHealth = Spring.GetUnitHealth
-local GetMouseState = Spring.GetMouseState
-local SelectUnitArray = Spring.SelectUnitArray
-local TraceScreenRay = Spring.TraceScreenRay
-local GetUnitPosition = Spring.GetUnitPosition
-local GetGameFrame = Spring.GetGameFrame
-local Echo = Spring.Echo
 
 function widget:GameStart()
 	gameStarted = true
@@ -217,12 +108,9 @@ end
 
 local function ChangeUnitTypeAutogroupHandler(_, _, args, data)
 	local gr = args[1]
+	local removeAll = data and data['removeAll']
 
-	local removeAll = data and data["removeAll"]
-
-	if not removeAll and not gr then
-		return
-	end -- noop if add to autogroup and no argument
+	if not removeAll and not gr then return end -- noop if add to autogroup and no argument
 
 	if removeAll then
 		gr = nil
@@ -251,9 +139,9 @@ local function ChangeUnitTypeAutogroupHandler(_, _, args, data)
 	for udid, _ in pairs(selUnitDefIDs) do
 		if verbose then
 			if gr then
-				Echo(Spring.I18N("ui.autogroups.unitAdded", { unit = UnitDefs[udid].humanName, groupNumber = gr }))
+				Echo( Spring.I18N('ui.autogroups.unitAdded', { unit = UnitDefs[udid].humanName, groupNumber = gr }) )
 			else
-				Echo(Spring.I18N("ui.autogroups.unitRemoved", { unit = UnitDefs[udid].humanName }))
+				Echo( Spring.I18N('ui.autogroups.unitRemoved', { unit = UnitDefs[udid].humanName }) )
 			end
 		end
 	end
@@ -325,43 +213,47 @@ local function loadAutogroupPreset(_, _, args, data)
 	end
 end
 
+
 function widget:Initialize()
+
 	widget:PlayerChanged()
 
 	widgetHandler:AddAction("add_to_autogroup", ChangeUnitTypeAutogroupHandler, nil, "p") -- With a parameter, adds all units of this type to a specific autogroup
 	widgetHandler:AddAction("remove_from_autogroup", ChangeUnitTypeAutogroupHandler, { removeAll = true }, "p") -- Without a parameter, removes all units of this type from autogroups
 	widgetHandler:AddAction("remove_one_unit_from_group", RemoveOneUnitFromGroupHandler, nil, "p") -- Removes the closest of selected units from groups and selects only it
-	widgetHandler:AddAction("load_autogroup_preset", loadAutogroupPreset, nil, "p")
+	widgetHandler:AddAction("load_autogroup_preset", loadAutogroupPreset, nil, "p") -- With a parameter, adds all units of this type to a specific autogroup preset
+
 
 	for i = 0, 9 do
-		Spring.SendCommands("unbindkeyset ctrl+alt+" .. i)
-		Spring.SendCommands("bind ctrl+alt+" .. i .. " load_autogroup_preset " .. i)
+		Spring.SendCommands([[unbindkeyset ctrl+alt+]]..i)
+		Spring.SendCommands("bind ctrl+alt+"..i.." load_autogroup_preset "..i)
 	end
+	
 
-	WG["autogroup w. preset"] = {}
-	WG["autogroup w. preset"].getImmediate = function()
+	WG['autogroup w. preset'] = {}
+	WG['autogroup w. preset'].getImmediate = function()
 		return immediate
 	end
-	WG["autogroup w. preset"].setImmediate = function(value)
+	WG['autogroup w. preset'].setImmediate = function(value)
 		immediate = value
 	end
 
-	WG["autogroup w. preset"].getPersist = function()
+	WG['autogroup w. preset'].getPersist = function()
 		return persist
 	end
-	WG["autogroup w. preset"].setPersist = function(value)
+	WG['autogroup w. preset'].setPersist = function(value)
 		persist = value
 	end
 	--[[WG['autogroup w. preset'].getGroups = function()
 		return unit2group
 	end]]
-	WG["autogroup w. preset"].getPresets = function()
+	WG['autogroup w. preset'].getPresets = function()
 		return presets
 	end
 end
 
 function widget:Shutdown()
-	WG["autogroup w. preset"] = nil
+	WG['autogroup w. preset'] = nil
 end
 
 function widget:UnitFinished(unitID, unitDefID, unitTeam)
@@ -375,12 +267,7 @@ function widget:UnitFinished(unitID, unitDefID, unitTeam)
 		finiGroup[unitID] = 1
 	end
 
-	if
-		builtInFrame
-		or immediate
-		or groupableBuildings[unitDefID]
-		or (builtInPlace[unitID] and #Spring.GetCommandQueue(unitID, 1) == 0)
-	then
+	if builtInFrame or immediate or groupableBuildings[unitDefID] or (builtInPlace[unitID] and #Spring.GetCommandQueue(unitID, 1) == 0) then
 		local gr = presets[currPreset][unitDefID]
 		if gr ~= nil then
 			SetUnitGroup(unitID, gr)
@@ -391,9 +278,7 @@ function widget:UnitFinished(unitID, unitDefID, unitTeam)
 end
 
 function widget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
-	if unitTeam ~= myTeam then
-		return
-	end
+	if unitTeam ~= myTeam then return end
 
 	createdFrame[unitID] = GetGameFrame()
 
@@ -464,7 +349,7 @@ function widget:GetConfigData()
 end
 
 function widget:SetConfigData(data)
-	if data and type(data) == "table" and data.version and (data.version + 0) >= 5 then
+	if data and type(data) == 'table' and data.version and (data.version + 0) >= 5 then
 		if data.immediate ~= nil then
 			immediate = data.immediate
 			verbose = data.verbose
@@ -474,8 +359,8 @@ function widget:SetConfigData(data)
 			persist = data.persist
 		end
 		local groupData = data.presets
-		if groupData and type(groupData) == "table" then
-			if groupData[1] and type(groupData[1]) == "table" then
+		if groupData and type(groupData) == 'table' then
+			if groupData[1] and type(groupData[1]) == 'table' then
 				presets = data.presets
 			end
 			--[[for _, pre in ipairs(groupData) do
