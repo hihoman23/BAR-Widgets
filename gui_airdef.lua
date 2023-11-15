@@ -11,7 +11,8 @@ function widget:GetInfo()
 		enabled = false
 	}
 end
-
+-----------------------------Changelog--------------------
+--hihoman23    (15nov2023): Added an option to only show AA rings when aircraft are selected 
 local onlyShowWhenAircraftSelected = true
 
 -- CONFIGURATION
