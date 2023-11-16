@@ -11,19 +11,14 @@ function widget:GetInfo()
 		enabled = false
 	}
 end
------------------------------Changelog--------------------
---hihoman23    (15nov2023): Added an option to only show AA rings when aircraft are selected 
-
-
-
-local onlyShowWhenAircraftSelected = true
 
 -- CONFIGURATION
 local lowspec = false -- if your computer is low spec
-local keycode = 111   -- o key
+--local keycode = 112   -- o key
+local onlyShowWhenAircraftSelected = true
 
 
-local enabledAsSpec = false
+local enabledAsSpec = true
 local pi = math.pi
 
 local function rgb(r, b, g, a)
@@ -34,9 +29,12 @@ end
 -- local x, y, z = Spring.GetUnitPosition(id)
 -- local gy = Spring.GetGroundHeight(x, z)
 -- Spring.Echo("HIEHGT", vy, y, gy, vy - gy)
-local color1 = rgb(39, 255, 0) -- missile
-local color3 = rgb(0, 55, 255) --strongmissile
-local color2 = rgb(255, 0, 0)  --flak
+local color1 = rgb(242, 121, 0) -- missile old: 39, 255, 0
+local color2 = rgb(255, 0, 0)  --flak old: 255, 0, 0
+local color3 = rgb(0, 0, 255) --strongmissile
+local alphamax = 30 -- limits the maximum alpha that overlapping circles can reach
+local drawalpha = 10
+local alphaincrement = 10
 local unitList = {
 	-- ARMADA
 	armrl = { weapons = { 2 }, color = color1, weaponheight = 64 }, --nettle
@@ -151,7 +149,6 @@ lineConfig["alphaValue"]    = 0.0 --> dynamic behavior can be found in the funct
 lineConfig["circleDivs"]    = 80.0
 
 local myPlayerID
-local drawalpha             = 25
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -231,7 +228,7 @@ end
 
 function widget:KeyPress(key, modifier, isRepeat)
 	if key == keycode then
-		drawalpha = (drawalpha + 25) % 75
+		drawalpha = (drawalpha + alphaincrement) % alphamax
 		UpdateCircleList()
 	end
 end
@@ -310,6 +307,26 @@ local function drawCircle(x, y, z, range, weaponheight, donttraceray)
 	return list
 end
 
+local function ShouldEnd()
+	if fullview and not enabledAsSpec then
+		return true
+	end
+	if drawalpha == 0 then
+		return true
+	end
+	local selectedUnits = Spring.GetSelectedUnits()
+	local aircraftSelected = false
+	for _, uID in ipairs(selectedUnits) do
+		if UnitDefs[Spring.GetUnitDefID(uID)].canFly then
+			aircraftSelected = true
+		end
+	end
+	if (not aircraftSelected) and onlyShowWhenAircraftSelected then
+		return true
+	end
+	return false
+end
+
 function UnitDetected(unitID, allyTeam, teamId)
 	local unitDefID = spGetUnitDefID(unitID)
 	local x, y, z = spGetUnitPosition(unitID)
@@ -379,16 +396,13 @@ function widget:PlayerChanged()
 	end
 end
 
-
 local lastupdate = 0
 local updateinterval = .6
 function widget:Update()
-	if fullview and not enabledAsSpec then
+	if ShouldEnd() then
 		return
 	end
-	if drawalpha == 0 then
-		return
-	end
+	
 	local time = spGetGameSeconds()
 
 	if time - lastupdate > updateinterval then
@@ -444,17 +458,6 @@ local function BuildVertexList(verts)
 end
 
 function DrawRanges()
-	local selectedUnits = Spring.GetSelectedUnits()
-	local aircraftSelected = false
-	for _, uID in ipairs(selectedUnits) do
-		if UnitDefs[Spring.GetUnitDefID(uID)].canfly then
-			aircraftSelected = true
-		end
-	end
-	if (not aircraftSelected)and onlyShowWhenAircraftSelected then
-		do return end
-	end
-
 	glDepthTest(false)
 	glTranslate(0, 0, 0) -- else it gets rendered below map sometimes
 	local color
@@ -468,6 +471,9 @@ function DrawRanges()
 				range = weapon["range"]
 
 				gl.Blending("alpha_add")
+				if drawalpha > alphamax then
+					drawalpha = alphamax
+				end
 				glColor(color[1], color[2], color[3], drawalpha / 255)
 				gl.PolygonMode(GL.FRONT_AND_BACK, GL.FILL)
 				glBeginEnd(GL.TRIANGLE_FAN, BuildVertexList, weapon.verts)
@@ -499,10 +505,7 @@ function widget:RecvLuaMsg(msg, playerID)
 end
 
 function widget:DrawWorld()
-	if fullview and not enabledAsSpec then
-		return
-	end
-	if drawalpha == 0 then
+	if ShouldEnd() then
 		return
 	end
 	if chobbyInterface then return end
