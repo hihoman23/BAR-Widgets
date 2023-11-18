@@ -558,11 +558,13 @@ end
 function widget:GetConfigData()
 	return {
 		alpha = drawalpha,
+		drawMode = drawMode,
 	}
 end
 
 function widget:SetConfigData(data)
 	if data.alpha ~= nil then
 		drawalpha = data.alpha
+		drawMode = data.mode
 	end
 end
