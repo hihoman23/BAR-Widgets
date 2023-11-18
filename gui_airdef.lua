@@ -16,7 +16,8 @@ end
 local lowspec = false -- if your computer is low spec
 --local keycode = 112   -- o key
 local onlyShowWhenAircraftSelected = true
-
+local drawToggle = true
+local drawMode = 1
 
 local enabledAsSpec = true
 local pi = math.pi
@@ -211,6 +212,25 @@ function widget:Shutdown()
 end
 
 local function init()
+	if WG.options then
+        WG.options.addOption({ widgetname = "Air Defense Range", id = "airdeftoggle", group = "custom", category = 2, name = "When should it show", type = "select", options = {"When aricraft selected", "Toggle with keybind", "Always"}, value = drawMode, description = "Toggle between always showing the rings or only when aircraft are selected.",
+			onload = function(i)
+				--onlyShowWhenAircraftSelected = true
+			end,
+			onchange = function(i, value)
+				drawMode = value
+				onlyShowWhenAircraftSelected = drawMode == 1
+			end,
+		})
+		WG.options.addOption({ widgetname = "Air Defense Range", id = "airdefalpha", group = "custom", category = 2, name = "Alpha", type = "slider", min = 0, max = 99, step = 1, value = drawalpha, description = "Set the alpha of the rings",
+			onload = function(i)
+				--onlyShowWhenAircraftSelected = true
+			end,
+			onchange = function(i, value)
+				drawalpha = tonumber(value)
+			end,
+		})
+    end
 	local units = Spring.GetAllUnits()
 	for i = 1, #units do
 		local unitID = units[i]
@@ -220,8 +240,18 @@ local function init()
 	end
 end
 
+local function toggleAARanges()
+	drawToggle = not drawToggle
+	local text = "off"
+	if drawToggle then
+		text = 'on'
+	end
+	Spring.Echo('AA ranges toggled ' .. text)
+end
+
 function widget:Initialize()
 	myPlayerID = spGetLocalTeamID()
+	widgetHandler:AddAction("toggle_aa_ranges", toggleAARanges, nil, "p")
 
 	init()
 end
@@ -308,6 +338,12 @@ local function drawCircle(x, y, z, range, weaponheight, donttraceray)
 end
 
 local function ShouldEnd()
+	if drawMode == 2 then
+		return drawToggle
+	end
+	if drawMode == 3 then
+		return false
+	end
 	if fullview and not enabledAsSpec then
 		return true
 	end
@@ -328,6 +364,7 @@ local function ShouldEnd()
 end
 
 function UnitDetected(unitID, allyTeam, teamId)
+	if allyTeam then return end
 	local unitDefID = spGetUnitDefID(unitID)
 	local x, y, z = spGetUnitPosition(unitID)
 	local uName = unitName[unitDefID]
