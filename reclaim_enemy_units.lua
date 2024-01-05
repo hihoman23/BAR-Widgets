@@ -13,7 +13,7 @@ end
 local onlyReclaimWhenNoTarget = false
 
 local myTeam = Spring.GetMyTeamID()
-local myAllyTeam = Spring.GetMyAllyTeamID
+local myAllyTeam = Spring.GetMyAllyTeamID()
 local GetUnitsInCylinder = Spring.GetUnitsInCylinder
 local GetUnitAllyTeam = Spring.GetUnitAllyTeam
 local GiveOrderToUnit = Spring.GiveOrderToUnit
@@ -34,7 +34,7 @@ function widget:UnitCommand(unitID, _, unitTeam, cmdID, cmdParams, cmdOpts)
 
 		local enemiesInRange = {}
 		for _, uID in ipairs(unitsInRange) do
-			if GetUnitAllyTeam(uID) ~= myTeam then
+			if GetUnitAllyTeam(uID) ~= myAllyTeam then
 				table.insert(enemiesInRange, uID)
 			end
 		end
