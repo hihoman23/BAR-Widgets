@@ -16,8 +16,9 @@ end
 local lowspec = false -- if your computer is low spec
 --local keycode = 112   -- o key
 local onlyShowWhenAircraftSelected = true
-local drawToggle = true
+local drawToggle = false
 local drawMode = 1
+local settingsInit = false
 
 local enabledAsSpec = true
 local pi = math.pi
@@ -33,7 +34,7 @@ end
 local color1 = rgb(242, 121, 0) -- missile old: 39, 255, 0
 local color2 = rgb(255, 0, 0)  --flak old: 255, 0, 0
 local color3 = rgb(0, 0, 255) --strongmissile
-local alphamax = 30 -- limits the maximum alpha that overlapping circles can reach
+local alphamax = 100 -- limits the maximum alpha that overlapping circles can reach
 local drawalpha = 10
 local alphaincrement = 10
 local unitList = {
@@ -211,7 +212,7 @@ function widget:Shutdown()
 	end
 end
 
-local function init()
+local function initSettings()
 	if WG.options then
         WG.options.addOption({ widgetname = "Air Defense Range", id = "airdeftoggle", group = "custom", category = 2, name = "When should it show", type = "select", options = {"When aricraft selected", "Toggle with keybind", "Always"}, value = drawMode, description = "Toggle between always showing the rings or only when aircraft are selected.",
 			onload = function(i)
@@ -220,6 +221,7 @@ local function init()
 			onchange = function(i, value)
 				drawMode = value
 				onlyShowWhenAircraftSelected = drawMode == 1
+				UpdateCircleList()
 			end,
 		})
 		WG.options.addOption({ widgetname = "Air Defense Range", id = "airdefalpha", group = "custom", category = 2, name = "Alpha", type = "slider", min = 0, max = 99, step = 1, value = drawalpha, description = "Set the alpha of the rings",
@@ -228,9 +230,14 @@ local function init()
 			end,
 			onchange = function(i, value)
 				drawalpha = tonumber(value)
+				UpdateCircleList()
 			end,
 		})
+		settingsInit = true
     end
+end
+
+local function init()
 	local units = Spring.GetAllUnits()
 	for i = 1, #units do
 		local unitID = units[i]
@@ -243,7 +250,7 @@ end
 local function toggleAARanges()
 	drawToggle = not drawToggle
 	local text = "off"
-	if drawToggle then
+	if not drawToggle then
 		text = 'on'
 	end
 	Spring.Echo('AA ranges toggled ' .. text)
@@ -565,6 +572,17 @@ end
 function widget:SetConfigData(data)
 	if data.alpha ~= nil then
 		drawalpha = data.alpha
-		drawMode = data.mode
+		drawMode = data.drawMode
+	end
+	initSettings()
+end
+
+local firstFrame
+function widget:GameFrame(n)
+	if not firstFrame then
+		firstFrame = n
+	end
+	if (n>firstFrame) and (not settingsInit) then
+		initSettings()
 	end
 end
