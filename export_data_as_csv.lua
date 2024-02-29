@@ -132,6 +132,7 @@ end
 
 function widget:Initialize()
     timeInterval = timeInterval*30
+    widgetHandler:AddAction("save_resource_data", saveData, nil, "p")
 end
 
 function widget:GameStart()
