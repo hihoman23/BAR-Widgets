@@ -11,7 +11,7 @@ function widget:GetInfo()
 end
 
 local globalPath = "LuaUI/Widgets/CSV_data/"
-local timeInterval = 10 -- in seconds, will get converted to frames later
+local timeInterval = 15 -- in seconds, will get converted to frames later
 local ignoreList = {
     time = true,
     frame = true,
@@ -90,8 +90,11 @@ local function addCurrentData(force)
                 local history = GetTeamStatsHistory(teamID,0,range)
                 if history then
                     teamCount = teamCount + 1
-                    local i = #history
-                    for stat, val in pairs(history[i]) do
+                    history = history[#history]
+
+                    history.damageEfficiency = (history.damageDealt/history.damageReceived)*100
+
+                    for stat, val in pairs(history) do
                         if not ignoreList[stat] then
                             local statTable = data[stat]
                             if statTable then
