@@ -139,6 +139,10 @@ end
 function widget:Initialize()
     timeInterval = timeInterval*30
     widgetHandler:AddAction("save_resource_data", saveData, nil, "p")
+
+    if not Spring.GetSpectatingState() then
+        widgetHandler:RemoveWidget(self)
+    end
 end
 
 function widget:GameStart()
@@ -147,5 +151,5 @@ end
 
 
 function widget:GameOver()
-    saveData(frame)
+    saveData()
 end
