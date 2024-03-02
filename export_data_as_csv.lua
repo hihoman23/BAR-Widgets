@@ -92,7 +92,10 @@ local function addCurrentData(force)
                     teamCount = teamCount + 1
                     history = history[#history]
 
-                    history.damageEfficiency = (history.damageDealt/history.damageReceived)*100
+                    history.damageEfficiency = 0
+                    if not (history.damageReceived == 0) then
+                        history.damageEfficiency = (history.damageDealt/history.damageReceived)*100
+                    end
 
                     for stat, val in pairs(history) do
                         if not ignoreList[stat] then
@@ -127,9 +130,9 @@ local function createName()
     return timeDate
 end
 
-local function saveData(finalFrame)
+local function saveData()
     addCurrentData(true)
-    tableToCSV(data, createName(), finalFrame)
+    tableToCSV(data, createName(), frame)
     Spring.Echo("Resource Data Saved")
 end
 
