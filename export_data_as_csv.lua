@@ -11,7 +11,7 @@ function widget:GetInfo()
 end
 
 local globalPath = "LuaUI/Widgets/CSV_data/"
-local timeInterval = 15 -- in seconds, will get converted to frames later
+local timeInterval = 10 -- in seconds, will get converted to frames later
 local ignoreList = {
     time = true,
     frame = true,
@@ -95,7 +95,7 @@ local function createTable()
     teamCount = 0
     local dataTable = {}
     local finalFrame
-    local timeInterval = math.ceil(timeInterval/450)
+    timeInterval = math.ceil(timeInterval/450)
     for _,teamID in ipairs(teamList) do
         if teamID ~= GetGaiaTeamID() then
             local range = GetTeamStatsHistory(teamID)
@@ -139,6 +139,7 @@ local function createTable()
         end
     end
     data = dataTable
+    timeInterval = timeInterval*450
 end
 
 local function addCurrentData(force)
@@ -184,7 +185,7 @@ local function createName()
     return timeDate
 end
 
-local function saveData()
+local function saveData(fromAction)
     if isSpec then
         addCurrentData(true)
     else
