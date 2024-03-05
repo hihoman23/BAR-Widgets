@@ -11,7 +11,7 @@ function widget:GetInfo()
 end
 
 local globalPath = "LuaUI/Widgets/CSV_data/"
-local timeInterval = 10 -- in seconds, will get converted to frames later
+local timeInterval = 15 -- in seconds, will get converted to frames later
 local ignoreList = {
     time = true,
     frame = true,
@@ -82,7 +82,12 @@ local function tableToCSV(tbl, name, finalFrame)
     end
 end
 
-local function addStats(hist)
+local function addStats(hist, lastHist)
+    hist.deltaDamage = hist.damageDealt
+    if lastHist then
+        hist.deltaDamage = hist.deltaDamage - lastHist.damageDealt
+    end
+
     hist.damageEfficiency = 0
     if not (hist.damageReceived == 0) then
         hist.damageEfficiency = (hist.damageDealt/hist.damageReceived)*100
@@ -91,6 +96,7 @@ local function addStats(hist)
     return hist
 end
 
+local lastHist
 local function createTable()
     teamCount = 0
     local dataTable = {}
@@ -103,7 +109,8 @@ local function createTable()
             if history then
                 teamCount = teamCount + 1
                 for i = 1, range, timeInterval do
-                    for stat, val in pairs(addStats(history[i])) do
+                    history = addStats(history[i], lastHist)
+                    for stat, val in pairs(history) do
                         if not ignoreList[stat] then
                             local statTable = dataTable[stat]
                             if statTable then
@@ -118,6 +125,7 @@ local function createTable()
                             end
                         end
                     end
+                    lastHist = history
                 end
                 if not ((range%timeInterval)==0) then
                     for stat, val in pairs(history[#history]) do
@@ -150,9 +158,9 @@ local function addCurrentData(force)
                 local history = GetTeamStatsHistory(teamID,0,range)
                 if history then
                     teamCount = teamCount + 1
-                    history = history[#history]
+                    history = addStats(history[#history], lastHist)
 
-                    for stat, val in pairs(addStats(history)) do
+                    for stat, val in pairs(history) do
                         if not ignoreList[stat] then
                             local statTable = data[stat]
                             if statTable then
@@ -167,6 +175,8 @@ local function addCurrentData(force)
                             end
                         end
                     end
+                    
+                    lastHist = history
                 end
             end
         end
