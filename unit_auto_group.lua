@@ -81,6 +81,7 @@ local createdFrame = {}
 
 local gameStarted
 
+local GetUnitGroup = Spring.GetUnitGroup
 local SetUnitGroup = Spring.SetUnitGroup
 local GetSelectedUnits = Spring.GetSelectedUnits
 local GetUnitDefID = Spring.GetUnitDefID
@@ -209,6 +210,8 @@ local function loadAutogroupPreset(_, _, args, data)
 	for _, uID in ipairs(Spring.GetTeamUnits(myTeam)) do
 		if currPresetData[GetUnitDefID(uID)] then
 			SetUnitGroup(uID, currPresetData[GetUnitDefID(uID)])
+		else
+			SetUnitGroup(uID, -1)
 		end
 	end
 end
@@ -221,39 +224,34 @@ function widget:Initialize()
 	widgetHandler:AddAction("add_to_autogroup", ChangeUnitTypeAutogroupHandler, nil, "p") -- With a parameter, adds all units of this type to a specific autogroup
 	widgetHandler:AddAction("remove_from_autogroup", ChangeUnitTypeAutogroupHandler, { removeAll = true }, "p") -- Without a parameter, removes all units of this type from autogroups
 	widgetHandler:AddAction("remove_one_unit_from_group", RemoveOneUnitFromGroupHandler, nil, "p") -- Removes the closest of selected units from groups and selects only it
-	widgetHandler:AddAction("load_autogroup_preset", loadAutogroupPreset, nil, "p") -- With a parameter, adds all units of this type to a specific autogroup preset
-
+	widgetHandler:AddAction("load_autogroup_preset", loadAutogroupPreset, nil, "p")
 
 	for i = 0, 9 do
 		Spring.SendCommands([[unbindkeyset ctrl+alt+]]..i)
 		Spring.SendCommands("bind ctrl+alt+"..i.." load_autogroup_preset "..i)
 	end
-	
 
-	WG['autogroup w. preset'] = {}
-	WG['autogroup w. preset'].getImmediate = function()
+	WG['autogroup'] = {}
+	WG['autogroup'].getImmediate = function()
 		return immediate
 	end
-	WG['autogroup w. preset'].setImmediate = function(value)
+	WG['autogroup'].setImmediate = function(value)
 		immediate = value
 	end
 
-	WG['autogroup w. preset'].getPersist = function()
+	WG['autogroup'].getPersist = function()
 		return persist
 	end
-	WG['autogroup w. preset'].setPersist = function(value)
+	WG['autogroup'].setPersist = function(value)
 		persist = value
 	end
-	--[[WG['autogroup w. preset'].getGroups = function()
-		return unit2group
-	end]]
-	WG['autogroup w. preset'].getPresets = function()
-		return presets
+	WG['autogroup'].getGroups = function()
+		return presets[currPreset]
 	end
 end
 
 function widget:Shutdown()
-	WG['autogroup w. preset'] = nil
+	WG['autogroup'] = nil
 end
 
 function widget:UnitFinished(unitID, unitDefID, unitTeam)
@@ -269,7 +267,7 @@ function widget:UnitFinished(unitID, unitDefID, unitTeam)
 
 	if builtInFrame or immediate or groupableBuildings[unitDefID] or (builtInPlace[unitID] and #Spring.GetCommandQueue(unitID, 1) == 0) then
 		local gr = presets[currPreset][unitDefID]
-		if gr ~= nil then
+		if gr ~= nil and GetUnitGroup(unitID) == nil then
 			SetUnitGroup(unitID, gr)
 		end
 	end
@@ -336,10 +334,11 @@ function widget:GetConfigData()
 				table.insert(groups, { UnitDefs[id].name, gr })
 			end
 		end
+		table.insert(savePresets, groups)
 	end
 	local ret = {
 		version = versionNum,
-		presets = presets,
+		presets = savePresets,
 		immediate = immediate,
 		persist = persist,
 		verbose = verbose,
@@ -361,34 +360,17 @@ function widget:SetConfigData(data)
 		local groupData = data.presets
 		if groupData and type(groupData) == 'table' then
 			if groupData[1] and type(groupData[1]) == 'table' then
-				presets = data.presets
-			end
-			--[[for _, pre in ipairs(groupData) do
-				if type(pre) == 'table' then
-					for _, nam in ipairs(pre) do
-						local gr = UnitDefNames[nam[1] ]
-						if gr ~= nil then
-							presets[pre][gr.id] = nam[2]
+				for p, preset in pairs(data.presets) do
+					for _, group in ipairs(preset) do
+						if type(group) == 'table' then
+							local gr = UnitDefNames[group[1]]
+							if gr then
+								presets[p][gr.id] = group[2]
+							end
 						end
 					end
 				end
-			end]]
-		end
-	end
-end
-
---[[keybind: ctrl + alt + preset number
-function widget:KeyPress(key, mods)
-	if (mods.alt) and mods.ctrl then
-		if key >= 48 and key <=57 then
-			currPreset = key - 48
-			Echo('Current preset: '..currPreset)
-			local currPresetData = presets[currPreset]
-			for _, uID in ipairs(Spring.GetTeamUnits(myTeam)) do
-				if currPresetData[GetUnitDefID(uID)] then
-					SetUnitGroup(uID, currPresetData[GetUnitDefID(uID)])
-				end
 			end
 		end
 	end
-end]]
+end
