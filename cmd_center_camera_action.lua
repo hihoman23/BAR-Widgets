@@ -9,7 +9,7 @@ function widget:GetInfo()
         enabled = true --  loaded by default?
     }
 end
---change keybinds at line
+--change keybinds at line 98
 
 
 --disables widget for scout spam
