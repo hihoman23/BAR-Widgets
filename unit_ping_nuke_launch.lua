@@ -1,6 +1,6 @@
 function widget:GetInfo()
     return {
-        name    = "Nuke Launch Ping",
+        name    = "Nuke Launch Ping v1.1",
         desc    = "Pings location and radius of nuke launches",
         author  = "hihoman23",
         date    = "2023",
