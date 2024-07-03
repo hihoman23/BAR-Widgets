@@ -15,6 +15,9 @@ local priorityPing = "sounds/ui/priority.wav"
 local volume = 0.6
 
 local GetUnitsInCylinder = Spring.GetUnitsInCylinder
+local myTeam = Spring.GetMyTeamID
+
+local range = 100
 
 function widget:Initialize()
 	WG['mapmarkping'] = {}
