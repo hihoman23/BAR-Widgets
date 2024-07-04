@@ -16,11 +16,18 @@ local volume = 0.6
 local myTeam = Spring.GetMyTeamID
 
 local range = 100
+local isSpec = false
 
 
 local GetUnitsInCylinder = Spring.GetUnitsInCylinder
+local GetUnitTeam = Spring.GetUnitTeam
+
+function widget:PlayerChanged()
+    isSpec = Spring.GetSpectatingState()
+end
 
 function widget:Initialize()
+    widget:PlayerChanged()
 	WG['mapmarkping'] = {}
 	WG['mapmarkping'].getMapmarkVolume = function()
 		return volume
@@ -32,8 +39,16 @@ end
 
 function widget:MapDrawCmd(playerID, cmdType, x, y, z, a, b, c)
     if cmdType == "point" then
-        local units = GetUnitsInCylinder(x, z, range, myTeam)
-        if type(units) == "table" and #units>0 then
+        local allUnits = GetUnitsInCylinder(x, z, range)
+        local unitFound = false
+
+        for _, unit in ipairs(allUnits) do
+            if GetUnitTeam(unit) == myTeam then
+                unitFound = true
+                break
+            end
+        end
+        if unitsFound and not isSpec then
             Spring.PlaySoundFile(priorityPing, volume*0.5, nil, "ui")
         else
             Spring.PlaySoundFile( mapmarkFile, volume*20, x, y, z, nil, nil, nil, "ui")
