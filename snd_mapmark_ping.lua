@@ -33,7 +33,7 @@ function widget:MapDrawCmd(playerID, cmdType, x, y, z, a, b, c)
     if cmdType == "point" then
         local units = GetUnitsInCylinder(x, z, range, myTeam)
         if type(units) == "table" and #units>0 then
-            Spring.PlaySoundFile(priorityPing, volume, nil, "ui")
+            Spring.PlaySoundFile(priorityPing, volume*0.5, nil, "ui")
         else
             Spring.PlaySoundFile( mapmarkFile, volume*20, x, y, z, nil, nil, nil, "ui")
             Spring.PlaySoundFile( mapmarkFile, volume*0.3, nil, "ui" )	-- to make sure it's still somewhat audible when far away
