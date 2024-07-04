@@ -13,11 +13,12 @@ end
 local mapmarkFile = "sounds/ui/mappoint2.wav"
 local priorityPing = "sounds/ui/priority.wav"
 local volume = 0.6
-
-local GetUnitsInCylinder = Spring.GetUnitsInCylinder
 local myTeam = Spring.GetMyTeamID
 
 local range = 100
+
+
+local GetUnitsInCylinder = Spring.GetUnitsInCylinder
 
 function widget:Initialize()
 	WG['mapmarkping'] = {}
