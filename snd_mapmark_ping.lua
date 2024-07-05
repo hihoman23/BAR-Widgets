@@ -13,7 +13,7 @@ end
 local mapmarkFile = "sounds/ui/mappoint2.wav"
 local priorityPing = "sounds/ui/priority.wav"
 local volume = 0.6
-local myTeam = Spring.GetMyTeamID
+local myTeam = Spring.GetMyTeamID()
 
 local range = 100
 local isSpec = false
