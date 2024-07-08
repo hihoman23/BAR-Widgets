@@ -48,7 +48,7 @@ function widget:MapDrawCmd(playerID, cmdType, x, y, z, a, b, c)
                 break
             end
         end
-        if unitsFound and not isSpec then
+        if unitFound and not isSpec then
             Spring.PlaySoundFile(priorityPing, volume*0.5, nil, "ui")
         else
             Spring.PlaySoundFile( mapmarkFile, volume*20, x, y, z, nil, nil, nil, "ui")
