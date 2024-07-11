@@ -89,7 +89,7 @@ function widget:MapDrawCmd(playerID, cmdType, x, y, z, a, b, c)
         end
 
         if not unitFound and airCount > 0 then
-            unitFound = string.find(a, "air") or checkForAircraft(x, z, range) 
+            unitFound = string.find(string.lower(a), "air") or checkForAircraft(x, z, range) 
         end
 
         if unitFound and (not isSpec) then
