@@ -40,7 +40,7 @@ local GetTeamUnitsByDefs = Spring.GetTeamUnitsByDefs
 
 local function isFactoryUsable(factoryID)
     local commandq = GetFactoryCommands(factoryID, 2)
-    return #commandq == 0 or not commandq[1].options.alt
+    return #commandq == 0 or not (commandq[1].options.alt or commandq[2].options.alt)
 end
 
 local function tryToBuild(unitDefID, ignore)
