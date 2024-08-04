@@ -40,11 +40,11 @@ local GetTeamUnitsByDefs = Spring.GetTeamUnitsByDefs
 
 local function isFactoryUsable(factoryID)
     local commandq = GetFactoryCommands(factoryID, 2)
-    return #commandq == 0 or not (commandq[1].options.alt or commandq[2].options.alt)
+    return commandq and( #commandq == 0 or not (commandq[1].options.alt or commandq[2].options.alt))
 end
 
 local function tryToBuild(unitDefID, ignore)
-    for factDefID, _ in pairs(possibleFacts[unitDefID]) do
+    for factDefID, _ in pairs(possibleFacts[unitDefID] or {}) do
         local factories = GetTeamUnitsByDefs(myTeam, factDefID)
         for _, factory in ipairs(factories) do
             if isFactoryUsable(factory) and not ignore[factory] then
@@ -107,7 +107,7 @@ function widget:Initialize()
     WG.Quotas.getQuotas = function()
         return quotas
     end
-    WG.Quotas.update = function(newQuotas, factories)
+    WG.Quotas.update = function(newQuotas)
         quotas = newQuotas
     end
 end
