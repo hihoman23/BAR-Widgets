@@ -60,7 +60,7 @@ end
 
 local function isFactoryUsable(factoryID)
     local commandq = GetFactoryCommands(factoryID, 2)
-    return commandq and( #commandq == 0 or not (commandq[1].options.alt or commandq[2].options.alt))
+    return commandq and( #commandq == 0 or not (commandq[1].options.alt or (commandq[2] and commandq[2].options.alt)))
 end
 
 local function tryToBuild(unitDefID, ignore)
@@ -108,7 +108,7 @@ local function fillQuotas()
 end
 
 function widget:GameFrame(n)
-    if n % 30 == 0 then
+    if n % 10 == 0 then
         fillQuotas()
     end
 end
@@ -116,7 +116,7 @@ end
 
 local function clearQuotas(cmd, optLine, optWords, data, isRepeat, release, actions)
     local deleteAll = optWords and (optWords[1] == "all")
-    
+
     if deleteAll then
         quotas = {}
     elseif WG["gridmenu"] and WG["gridmenu"].getActiveBuilder and WG["gridmenu"].getActiveBuilder() then
