@@ -16,11 +16,13 @@ local allUnits = {}
 
 local possibleFacts = {}
 local factoryDefIDs = {}
+local factBuildOpts = {}
 
 
 for unitDefID, uDef in pairs(UnitDefs) do
     if uDef.isFactory then
         factoryDefIDs[unitDefID] = true
+        factBuildOpts[unitDefID] = table.copy(uDef.buildOptions)
         for _, opt in pairs(uDef.buildOptions) do
             possibleFacts[opt] = possibleFacts[opt] or {}
             possibleFacts[opt][unitDefID] = true
@@ -28,7 +30,7 @@ for unitDefID, uDef in pairs(UnitDefs) do
     end
 end
 
--- Speeeed
+----- Speeeed ------
 local myTeam = Spring.GetMyTeamID()
 local GiveOrderToUnit = Spring.GiveOrderToUnit
 local GetFactoryCommands = Spring.GetFactoryCommands
@@ -37,24 +39,7 @@ local GetTeamUnitsByDefs = Spring.GetTeamUnitsByDefs
 -----
 
 
-
-local function isFactoryUsable(factoryID)
-    local commandq = GetFactoryCommands(factoryID, 2)
-    return commandq and( #commandq == 0 or not (commandq[1].options.alt or commandq[2].options.alt))
-end
-
-local function tryToBuild(unitDefID, ignore)
-    for factDefID, _ in pairs(possibleFacts[unitDefID] or {}) do
-        local factories = GetTeamUnitsByDefs(myTeam, factDefID)
-        for _, factory in ipairs(factories) do
-            if isFactoryUsable(factory) and not ignore[factory] then
-                GiveOrderToUnit(factory, -unitDefID, {}, {"alt"})
-                return factory
-            end
-        end
-    end
-end
-
+--------- quota logic -------------
 ---@param table table
 ---@param f function|nil
 local function findMin(table, f)
@@ -71,6 +56,23 @@ local function findMin(table, f)
         end
     end
     return best, bestKey
+end
+
+local function isFactoryUsable(factoryID)
+    local commandq = GetFactoryCommands(factoryID, 2)
+    return commandq and( #commandq == 0 or not (commandq[1].options.alt or commandq[2].options.alt))
+end
+
+local function tryToBuild(unitDefID, ignore)
+    for factDefID, _ in pairs(possibleFacts[unitDefID] or {}) do
+        local factories = GetTeamUnitsByDefs(myTeam, factDefID)
+        for _, factory in ipairs(factories) do
+            if isFactoryUsable(factory) and not ignore[factory] then
+                GiveOrderToUnit(factory, -unitDefID, {}, {"alt"})
+                return factory
+            end
+        end
+    end
 end
 
 local function fillQuotas()
@@ -111,6 +113,23 @@ function widget:GameFrame(n)
     end
 end
 
+
+local function clearQuotas(cmd, optLine, optWords, data, isRepeat, release, actions)
+    local deleteAll = optWords and (optWords[1] == "all")
+    
+    if deleteAll then
+        quotas = {}
+    elseif WG["gridmenu"] and WG["gridmenu"].getActiveBuilder and WG["gridmenu"].getActiveBuilder() then
+        for _, opt in ipairs(factBuildOpts[WG["gridmenu"].getActiveBuilder()]) do
+            quotas[opt] = nil
+        end
+    end
+
+    if WG["gridmenu"] and WG["gridmenu"].forceReload then
+        WG["gridmenu"].forceReload()
+    end
+end
+
 function widget:PlayerChanged(playerID)
     if Spring.GetSpectatingState() then
         widgetHandler:RemoveWidget(self)
@@ -125,6 +144,8 @@ function widget:Initialize()
         quotas[UnitDefNames[unitName].id] = quotas[unitName]
         quotas[unitName] = nil
     end
+
+    widgetHandler:AddAction("delete_quotas", clearQuotas, nil, "p")
 
     WG.Quotas = {}
     WG.Quotas.getQuotas = function()
