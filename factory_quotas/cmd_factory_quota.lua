@@ -116,11 +116,6 @@ function widget:GameFrame(n)
     end
 end
 
-function widget:AllowCommand()
-    Spring.Echo("hellow")
-    return true
-end
-
 function widget:PlayerChanged(playerID)
     if Spring.GetSpectatingState() then
         widgetHandler:RemoveWidget(self)
