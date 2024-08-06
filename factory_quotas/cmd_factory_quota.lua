@@ -6,7 +6,7 @@ function widget:GetInfo()
       date = "2024",
       license = "GNU GPL, v2 or later",
       layer = -1,
-      enabled = false
+      enabled = true
     }
 end
 
@@ -89,21 +89,16 @@ local function fillQuotas()
         return need1 < need2
     end
 
-    --table.sort(newQuotas, isBetterQuota)
-
     local usedFacts = {}
-    --[[for _, quotaPair in ipairs(newQuotas) do
-        local fact = tryToBuild(quotaPair[1], usedFacts)
-        if fact then
-            usedFacts[fact] = true
-        end
-    end]]
     while #newQuotas > 0 do
         local currQuota, quotaKey = findMin(newQuotas, isBetterQuota)
         local fact = tryToBuild(currQuota[1], usedFacts)
         if fact then
             usedFacts[fact] = true
             allUnits[currQuota[1]] = (allUnits[currQuota[1]] or 0) + 1
+            if currQuota[2].amount == allUnits[currQuota[1]] then -- quota filled
+                table.remove(newQuotas, quotaKey)
+            end
         else
             table.remove(newQuotas, quotaKey)
         end
