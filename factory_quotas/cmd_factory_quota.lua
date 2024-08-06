@@ -55,6 +55,24 @@ local function tryToBuild(unitDefID, ignore)
     end
 end
 
+---@param table table
+---@param f function|nil
+local function findMin(table, f)
+    f = f or function(i1, i2) return i1 < i2 end
+    local best
+    local bestKey
+    for k, v in pairs(table) do
+        if not best then
+            best = v
+            bestKey = k
+        elseif f(v, best) then
+            best = v
+            bestKey = k
+        end
+    end
+    return best, bestKey
+end
+
 local function fillQuotas()
     allUnits = GetTeamUnitsCounts(myTeam)
 
@@ -71,13 +89,23 @@ local function fillQuotas()
         return need1 < need2
     end
 
-    table.sort(newQuotas, isBetterQuota)
+    --table.sort(newQuotas, isBetterQuota)
 
     local usedFacts = {}
-    for _, quotaPair in ipairs(newQuotas) do
+    --[[for _, quotaPair in ipairs(newQuotas) do
         local fact = tryToBuild(quotaPair[1], usedFacts)
         if fact then
             usedFacts[fact] = true
+        end
+    end]]
+    while #newQuotas > 0 do
+        local currQuota, quotaKey = findMin(newQuotas, isBetterQuota)
+        local fact = tryToBuild(currQuota[1], usedFacts)
+        if fact then
+            usedFacts[fact] = true
+            allUnits[currQuota[1]] = (allUnits[currQuota[1]] or 0) + 1
+        else
+            table.remove(newQuotas, quotaKey)
         end
     end
 end
@@ -86,6 +114,11 @@ function widget:GameFrame(n)
     if n % 30 == 0 then
         fillQuotas()
     end
+end
+
+function widget:AllowCommand()
+    Spring.Echo("hellow")
+    return true
 end
 
 function widget:PlayerChanged(playerID)
