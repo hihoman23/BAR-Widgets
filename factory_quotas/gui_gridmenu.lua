@@ -1273,7 +1273,12 @@ function widget:Initialize()
 	WG["gridmenu"].clearCategory = function()
 		clearCategory()
 	end
-
+	WG["gridmenu"].getActiveBuilder = function()
+		return activeBuilder
+	end
+	WG["gridmenu"].forceReload = function()
+		redraw = true
+	end
 	WG["buildmenu"].getGroups = function()
 		return groups, units.unitGroup
 	end
