@@ -1273,12 +1273,7 @@ function widget:Initialize()
 	WG["gridmenu"].clearCategory = function()
 		clearCategory()
 	end
-	WG["gridmenu"].getActiveBuilder = function()
-		return activeBuilder
-	end
-	WG["gridmenu"].forceReload = function()
-		redraw = true
-	end
+
 	WG["buildmenu"].getGroups = function()
 		return groups, units.unitGroup
 	end
@@ -1330,7 +1325,6 @@ function widget:Initialize()
 	WG["buildmenu"].getIsShowing = function()
 		return buildmenuShows
 	end
-
 end
 
 -------------------------------------------------------------------------------
@@ -2357,7 +2351,7 @@ function widget:MousePress(x, y, button)
 							elseif spGetCmdDescIndex(-unitDefID) then
 								local alt, ctrl, meta, shift = Spring.GetModKeyState()
 								
-								if not meta then
+								if not (meta and builderIsFactory) then
 									pickBlueprint(unitDefID)
 								else
 									local amount = 1
